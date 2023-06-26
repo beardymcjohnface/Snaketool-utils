@@ -30,7 +30,7 @@ CLASSIFIERS = [
 setup(
     name="snaketool_utils",
     url="https://github.com/beardymcjohnface/snaketool-utils",
-    python_requires=">=3.9",
+    python_requires=">=3.7",
     description="Utility functions for Snaketool CLI",
     long_description=get_description(),
     long_description_content_type="text/markdown",
