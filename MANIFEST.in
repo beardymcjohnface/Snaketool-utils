@@ -1,0 +1,4 @@
+include LICENSE
+include VERSION
+include README.md
+recursive-include snaketool_utils *
