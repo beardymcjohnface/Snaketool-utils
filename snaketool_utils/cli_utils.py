@@ -1,4 +1,3 @@
-
 import sys
 import os
 import subprocess
@@ -80,13 +79,15 @@ def recursive_merge_config(config, overwrite_config):
 
     Returns (dict): Merged dictionary
     """
+
     def _update(d, u):
-        for (key, value) in u.items():
+        for key, value in u.items():
             if isinstance(value, collections.abc.Mapping):
                 d[key] = _update(d.get(key, {}), value)
             else:
                 d[key] = value
         return d
+
     _update(config, overwrite_config)
 
 
@@ -165,8 +166,9 @@ def run_snakemake(
     conda_prefix=None,
     snake_default=None,
     snake_args=[],
+    profile=None,
     log=None,
-    **kwargs
+    **kwargs,
 ):
     """Run a Snakefile!
 
@@ -180,6 +182,7 @@ def run_snakemake(
         conda_prefix (str): Filepath for Snakemake's --conda-prefix
         snake_default (list): Snakemake args to pass to Snakemake
         snake_args (list): Additional args to pass to Snakemake
+        profile (str): Name of Snakemake profile
         log (str): Log file for writing STDERR
         **kwargs:
 
@@ -206,7 +209,7 @@ def run_snakemake(
         )
 
     # add threads
-    if not "--profile" in snake_args:
+    if "--profile" not in snake_args and profile is None:
         snake_command += ["--cores", threads]
 
     # add conda args if using conda
@@ -222,6 +225,10 @@ def run_snakemake(
     # add any additional snakemake commands
     if snake_args:
         snake_command += list(snake_args)
+
+    # allow double-handling of profile
+    if profile:
+        snake_command += ["--profile", profile]
 
     # Run Snakemake!!!
     snake_command = " ".join(str(s) for s in snake_command)
