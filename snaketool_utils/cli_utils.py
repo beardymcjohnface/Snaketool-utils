@@ -61,8 +61,8 @@ def read_config(file):
         file (str): Filepath to config YAML file for reading
 
     Returns (dict): Config read from YAML file
-
     """
+
     with open(file, "r") as stream:
         config = yaml.safe_load(stream)
     return config
@@ -76,8 +76,6 @@ def recursive_merge_config(config, overwrite_config):
     Args:
         config (dict): Config dictionary to overwrite (e.g. defaults)
         overwrite_config (dict): Config dictionary of new/updated values to add
-
-    Returns (dict): Merged dictionary
     """
 
     def _update(d, u):
@@ -188,6 +186,7 @@ def run_snakemake(
 
     Returns (int): Exit code
     """
+
     snake_command = ["snakemake", "-s", snakefile_path]
 
     # if using a configfile
