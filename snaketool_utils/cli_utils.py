@@ -106,6 +106,26 @@ def update_config(in_config=None, merge=None, output_config=None, log=None):
     write_config(config, output_config, log=log)
 
 
+def tuple_to_list(dictionary):
+    """Convert click tuples to lists in (nested) dictionaries for safe dumping with pyyaml
+
+    Args:
+        dictionary (dict): dictionary of config for Snakemake
+
+    Returns:
+        dictionary (dict): dictionary with tuples converted to lists
+    """
+    out_dict = {}
+    for key, value in dictionary.items():
+        if isinstance(value, tuple):
+            out_dict[key] = list(value)
+        elif isinstance(value, dict):
+            out_dict[key] = tuple_to_list(value)
+        else:
+            out_dict[key] = value
+    return out_dict
+
+
 def write_config(config, file, log=None):
     """Write the config dictionary to a YAML file
 
@@ -115,6 +135,7 @@ def write_config(config, file, log=None):
         log (str): Filepath of log file for writing STDERR
     """
     msg(f"Writing config file to {file}", log=log)
+    config = tuple_to_list(config)
     with open(file, "w") as stream:
         yaml.dump(config, stream)
 

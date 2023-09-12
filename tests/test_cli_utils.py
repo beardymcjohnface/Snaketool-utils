@@ -16,6 +16,7 @@ from snaketool_utils.cli_utils import (
     update_config,
     copy_config,
     run_snakemake,
+    tuple_to_list,
 )
 
 
@@ -373,3 +374,33 @@ def test_run_snakemake(tmp_path):
 
         # Assert that the exit code is 0
         assert exit_code == 0
+
+
+def test_tuple_to_list_single_tuple():
+    input_dict = {'a': (1, 2, 3)}
+    expected_output = {'a': [1, 2, 3]}
+    assert tuple_to_list(input_dict) == expected_output
+
+
+def test_tuple_to_list_nested_tuples():
+    input_dict = {'a': (1, 2, 3), 'b': {'c': (4, 5)}}
+    expected_output = {'a': [1, 2, 3], 'b': {'c': [4, 5]}}
+    assert tuple_to_list(input_dict) == expected_output
+
+
+def test_tuple_to_list_no_tuples():
+    input_dict = {'a': 1, 'b': {'c': 2}}
+    expected_output = {'a': 1, 'b': {'c': 2}}
+    assert tuple_to_list(input_dict) == expected_output
+
+
+def test_tuple_to_list_empty_dict():
+    input_dict = {}
+    expected_output = {}
+    assert tuple_to_list(input_dict) == expected_output
+
+
+def test_tuple_to_list_mixed_types():
+    input_dict = {'a': (1, 2, 3), 'b': 'string', 'c': {'d': (4, 5)}, 'e': 6}
+    expected_output = {'a': [1, 2, 3], 'b': 'string', 'c': {'d': [4, 5]}, 'e': 6}
+    assert tuple_to_list(input_dict) == expected_output
