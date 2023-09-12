@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   tests:
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
 
     defaults:
@@ -32,8 +32,9 @@ jobs:
         shell: bash -el {0}
 
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-12, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
@@ -41,14 +42,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Setup env
       - uses: conda-incubator/setup-miniconda@v2
         with:
+          auto-update-conda: true
+          miniforge-version: "latest"
+          miniforge-variant: Mambaforge
           use-mamba: true
           mamba-version: "*"
-          channel-priority: false
-          activate-environment: snaketool_utils
-          environment-file: build/environment.yaml
+          channels: conda-forge,bioconda,defaults
+          channel-priority: true
+          activate-environment: snaketoolutils
+#          environment-file: build/environment.yaml
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
 
