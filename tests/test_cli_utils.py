@@ -263,12 +263,18 @@ def test_run_snakemake(tmp_path):
     # Create temporary files for the configfile, system config, and Snakefile
     configfile = tmp_path / "config.yaml"
     system_config = tmp_path / "system_config.yaml"
+    system_workflow_profile = tmp_path / "system_profile.yaml"
+    workflow_profile = tmp_path / "profile"
+    workflow_profile_config = tmp_path / "profile" / "config.yaml"
     snakefile_path = tmp_path / "Snakefile"
     log_file = tmp_path / "log"
 
     # Write the system config content to the system config file
     with open(system_config, "w") as f:
         f.write("key: value")
+
+    with open(system_workflow_profile, "w") as f:
+        f.write("key2: value2")
 
     # Write the Snakefile content to the Snakefile
     with open(snakefile_path, "w") as f:
@@ -297,11 +303,17 @@ def test_run_snakemake(tmp_path):
             configfile=configfile,
             system_config=system_config,
             snakefile_path=snakefile_path,
+            system_workflow_profile=system_workflow_profile,
+            workflow_profile=workflow_profile,
         )
 
         # Assert that the copy_config function was called with the expected arguments
         mock_copy_config.assert_called_once_with(
             configfile, system_config=system_config, log=None
+        )
+
+        mock_copy_config.assert_called_once_with(
+            workflow_profile_config, system_config=system_workflow_profile, log=None
         )
 
         # Assert that the update_config function was not called
@@ -351,6 +363,7 @@ def test_run_snakemake(tmp_path):
             snake_default=["--verbose"],
             snake_args=["--dry-run"],
             profile="my_profile",
+            workflow_profile="my_workflow_profile",
             log=log_file,
             additional_arg="value",
         )
@@ -367,7 +380,8 @@ def test_run_snakemake(tmp_path):
         mock_read_config.assert_called_once_with(configfile)
 
         # Assert that the subprocess.run function was called with the expected command
-        expected_command = "snakemake -s {} --configfile {} --use-conda --conda-prefix /path/to/conda --verbose --dry-run --profile my_profile".format(
+        expected_command = "snakemake -s {} --configfile {} --use-conda --conda-prefix /path/to/conda --verbose " \
+                           "--dry-run --profile my_profile --workflow-profile my_workflow_profile".format(
             snakefile_path, configfile
         )
         mock_run.assert_called_once_with(expected_command, shell=True)

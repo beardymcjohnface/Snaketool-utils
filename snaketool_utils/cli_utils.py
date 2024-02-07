@@ -186,6 +186,8 @@ def run_snakemake(
     snake_default=None,
     snake_args=[],
     profile=None,
+    workflow_profile=None,
+    system_workflow_profile=None,
     log=None,
     **kwargs,
 ):
@@ -202,6 +204,8 @@ def run_snakemake(
         snake_default (list): Snakemake args to pass to Snakemake
         snake_args (list): Additional args to pass to Snakemake
         profile (str): Name of Snakemake profile
+        workflow_profile (str): Name of Snakemake workflow-profile
+        system_workflow_profile (str): Filepath of system workflow-profile config.yaml to copy if not present
         log (str): Log file for writing STDERR
         **kwargs:
 
@@ -246,9 +250,16 @@ def run_snakemake(
     if snake_args:
         snake_command += list(snake_args)
 
-    # allow double-handling of profile
+    # allow double-handling of --profile
     if profile:
         snake_command += ["--profile", profile]
+
+    # allow double-handling of --workflow-profile
+    if workflow_profile:
+        # copy system default if not present
+        copy_config(os.path.join(workflow_profile, "config.yaml"), system_config=system_workflow_profile, log=log)
+
+        snake_command += ["--workflow-profile", workflow_profile]
 
     # Run Snakemake!!!
     snake_command = " ".join(str(s) for s in snake_command)
