@@ -368,8 +368,8 @@ def test_run_snakemake(tmp_path):
 
         # Assert that the copy_config function was called with the expected arguments
         mock_copy_config.assert_has_calls([
-            call(configfile, system_config=system_config, log=None),
-            call(workflow_profile_config, system_config=system_workflow_profile, log=None)
+            call(configfile, system_config=system_config, log=log_file),
+            call(workflow_profile_config, system_config=system_workflow_profile, log=log_file)
         ])
 
         # Assert that the update_config function was called with the expected arguments
