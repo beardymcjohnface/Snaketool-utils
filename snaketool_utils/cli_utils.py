@@ -175,6 +175,28 @@ def copy_config(
         )
 
 
+def initialise_config(
+        configfile=None,
+        system_config=None,
+        workflow_profile=None,
+        system_workflow_profile=None,
+        log=None
+):
+    """Copy system config files to default locations if not already present
+
+    Args:
+        configfile (str): Default runtime config yaml filepath
+        system_config (str): System template config file to copy to configfile
+        workflow_profile (str): Dir filepath for workflow profile config yaml
+        system_workflow_profile (str): System template config yaml file to copy to workflow_profile/config.yaml
+    """
+    if configfile and system_config:
+        copy_config(configfile, system_config=system_config, log=log)
+    if workflow_profile and system_workflow_profile:
+        workflow_profile_yaml = os.path.join(workflow_profile, "config.yaml")
+        copy_config(workflow_profile_yaml, system_config=system_workflow_profile, log=log)
+
+
 def run_snakemake(
     configfile=None,
     system_config=None,

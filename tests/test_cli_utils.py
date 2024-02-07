@@ -12,6 +12,7 @@ from snaketool_utils.cli_utils import (
     msg_box,
     read_config,
     recursive_merge_config,
+    initialise_config,
     write_config,
     update_config,
     copy_config,
@@ -257,6 +258,22 @@ def test_copy_config(tmp_path, left_path, right_config, merged_yaml):
     copy_config(file_path, merge_config=right_config, system_config=left_path)
     with open(file_path, "r") as f:
         assert f.read() == merged_yaml
+
+
+def test_initialise_config(tmp_path, left_path, left_yaml, right_path, right_yaml):
+    config_out = tmp_path / "config.yaml"
+    profile_out = tmp_path / "profile"
+    profile_out_yaml = tmp_path / "profile" / "config.yaml"
+    initialise_config(
+        configfile=config_out,
+        system_config=left_path,
+        workflow_profile=profile_out,
+        system_workflow_profile=right_path
+    )
+    with open(config_out, "r") as f:
+        assert f.read() == left_yaml
+    with open(profile_out_yaml, "r") as f:
+        assert f.read() == right_yaml
 
 
 def test_run_snakemake(tmp_path):
