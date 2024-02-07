@@ -308,13 +308,10 @@ def test_run_snakemake(tmp_path):
         )
 
         # Assert that the copy_config function was called with the expected arguments
-        mock_copy_config.assert_called_once_with(
-            configfile, system_config=system_config, log=None
-        )
-
-        mock_copy_config.assert_called_once_with(
-            workflow_profile_config, system_config=system_workflow_profile, log=None
-        )
+        mock_copy_config.assert_has_calls([
+            call(configfile, system_config=system_config, log=None),
+            call(workflow_profile_config, system_config=system_workflow_profile, log=None)
+        ])
 
         # Assert that the update_config function was not called
         mock_update_config.assert_not_called()
