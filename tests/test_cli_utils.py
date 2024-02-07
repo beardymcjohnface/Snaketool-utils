@@ -321,8 +321,8 @@ def test_run_snakemake(tmp_path):
 
         # Assert that the subprocess.run function was called with the expected command
         mock_run.assert_called_once_with(
-            "snakemake -s {} --configfile {} --cores 1".format(
-                snakefile_path, configfile
+            "snakemake -s {} --configfile {} --cores 1 --workflow-profile {}".format(
+                snakefile_path, configfile, workflow_profile
             ),
             shell=True,
         )
@@ -360,7 +360,7 @@ def test_run_snakemake(tmp_path):
             snake_default=["--verbose"],
             snake_args=["--dry-run"],
             profile="my_profile",
-            workflow_profile="my_workflow_profile",
+            workflow_profile=workflow_profile,
             log=log_file,
             additional_arg="value",
         )
@@ -378,8 +378,8 @@ def test_run_snakemake(tmp_path):
 
         # Assert that the subprocess.run function was called with the expected command
         expected_command = "snakemake -s {} --configfile {} --use-conda --conda-prefix /path/to/conda --verbose " \
-                           "--dry-run --profile my_profile --workflow-profile my_workflow_profile".format(
-            snakefile_path, configfile
+                           "--dry-run --profile my_profile --workflow-profile {}".format(
+            snakefile_path, configfile, workflow_profile
         )
         mock_run.assert_called_once_with(expected_command, shell=True)
 
