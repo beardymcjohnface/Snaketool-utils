@@ -180,7 +180,8 @@ def initialise_config(
         system_config=None,
         workflow_profile=None,
         system_workflow_profile=None,
-        log=None
+        log=None,
+        **kwargs
 ):
     """Copy system config files to default locations if not already present
 
