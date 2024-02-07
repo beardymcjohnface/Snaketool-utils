@@ -261,13 +261,13 @@ def test_copy_config(tmp_path, left_path, right_config, merged_yaml):
 
 def test_run_snakemake(tmp_path):
     # Create temporary files for the configfile, system config, and Snakefile
-    configfile = tmp_path / "config.yaml"
-    system_config = tmp_path / "system_config.yaml"
-    system_workflow_profile = tmp_path / "system_profile.yaml"
-    workflow_profile = tmp_path / "profile"
-    workflow_profile_config = tmp_path / "profile" / "config.yaml"
-    snakefile_path = tmp_path / "Snakefile"
-    log_file = tmp_path / "log"
+    configfile = str(tmp_path / "config.yaml")
+    system_config = str(tmp_path / "system_config.yaml")
+    system_workflow_profile = str(tmp_path / "system_profile.yaml")
+    workflow_profile = str(tmp_path / "profile")
+    workflow_profile_config = str(tmp_path / "profile" / "config.yaml")
+    snakefile_path = str(tmp_path / "Snakefile")
+    log_file = str(tmp_path / "log")
 
     # Write the system config content to the system config file
     with open(system_config, "w") as f:
