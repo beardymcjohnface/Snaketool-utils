@@ -3,7 +3,7 @@ from click.testing import CliRunner
 import sys
 import pytest
 from io import StringIO
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 
 from snaketool_utils.cli_utils import (
     OrderedCommands,
@@ -12,6 +12,7 @@ from snaketool_utils.cli_utils import (
     msg_box,
     read_config,
     recursive_merge_config,
+    initialise_config,
     write_config,
     update_config,
     copy_config,
@@ -259,16 +260,38 @@ def test_copy_config(tmp_path, left_path, right_config, merged_yaml):
         assert f.read() == merged_yaml
 
 
+def test_initialise_config(tmp_path, left_path, left_yaml, right_path, right_yaml):
+    config_out = tmp_path / "config.yaml"
+    profile_out = tmp_path / "profile"
+    profile_out_yaml = tmp_path / "profile" / "config.yaml"
+    initialise_config(
+        configfile=config_out,
+        system_config=left_path,
+        workflow_profile=profile_out,
+        system_workflow_profile=right_path
+    )
+    with open(config_out, "r") as f:
+        assert f.read() == left_yaml
+    with open(profile_out_yaml, "r") as f:
+        assert f.read() == right_yaml
+
+
 def test_run_snakemake(tmp_path):
     # Create temporary files for the configfile, system config, and Snakefile
-    configfile = tmp_path / "config.yaml"
-    system_config = tmp_path / "system_config.yaml"
-    snakefile_path = tmp_path / "Snakefile"
-    log_file = tmp_path / "log"
+    configfile = str(tmp_path / "config.yaml")
+    system_config = str(tmp_path / "system_config.yaml")
+    system_workflow_profile = str(tmp_path / "system_profile.yaml")
+    workflow_profile = str(tmp_path / "profile")
+    workflow_profile_config = str(tmp_path / "profile" / "config.yaml")
+    snakefile_path = str(tmp_path / "Snakefile")
+    log_file = str(tmp_path / "log")
 
     # Write the system config content to the system config file
     with open(system_config, "w") as f:
         f.write("key: value")
+
+    with open(system_workflow_profile, "w") as f:
+        f.write("key2: value2")
 
     # Write the Snakefile content to the Snakefile
     with open(snakefile_path, "w") as f:
@@ -297,12 +320,15 @@ def test_run_snakemake(tmp_path):
             configfile=configfile,
             system_config=system_config,
             snakefile_path=snakefile_path,
+            system_workflow_profile=system_workflow_profile,
+            workflow_profile=workflow_profile,
         )
 
         # Assert that the copy_config function was called with the expected arguments
-        mock_copy_config.assert_called_once_with(
-            configfile, system_config=system_config, log=None
-        )
+        mock_copy_config.assert_has_calls([
+            call(configfile, system_config=system_config, log=None),
+            call(workflow_profile_config, system_config=system_workflow_profile, log=None)
+        ])
 
         # Assert that the update_config function was not called
         mock_update_config.assert_not_called()
@@ -312,8 +338,8 @@ def test_run_snakemake(tmp_path):
 
         # Assert that the subprocess.run function was called with the expected command
         mock_run.assert_called_once_with(
-            "snakemake -s {} --configfile {} --cores 1".format(
-                snakefile_path, configfile
+            "snakemake -s {} --configfile {} --cores 1 --workflow-profile {}".format(
+                snakefile_path, configfile, workflow_profile
             ),
             shell=True,
         )
@@ -351,14 +377,17 @@ def test_run_snakemake(tmp_path):
             snake_default=["--verbose"],
             snake_args=["--dry-run"],
             profile="my_profile",
+            workflow_profile=workflow_profile,
+            system_workflow_profile=system_workflow_profile,
             log=log_file,
             additional_arg="value",
         )
 
         # Assert that the copy_config function was called with the expected arguments
-        mock_copy_config.assert_called_once_with(
-            configfile, system_config=system_config, log=log_file
-        )
+        mock_copy_config.assert_has_calls([
+            call(configfile, system_config=system_config, log=log_file),
+            call(workflow_profile_config, system_config=system_workflow_profile, log=log_file)
+        ])
 
         # Assert that the update_config function was called with the expected arguments
         # mock_update_config.assert_called_once_with(configfile, merge={"key2": "value2"}, log=log_file)
@@ -367,8 +396,9 @@ def test_run_snakemake(tmp_path):
         mock_read_config.assert_called_once_with(configfile)
 
         # Assert that the subprocess.run function was called with the expected command
-        expected_command = "snakemake -s {} --configfile {} --use-conda --conda-prefix /path/to/conda --verbose --dry-run --profile my_profile".format(
-            snakefile_path, configfile
+        expected_command = "snakemake -s {} --configfile {} --use-conda --conda-prefix /path/to/conda --verbose " \
+                           "--dry-run --profile my_profile --workflow-profile {}".format(
+            snakefile_path, configfile, workflow_profile
         )
         mock_run.assert_called_once_with(expected_command, shell=True)
 

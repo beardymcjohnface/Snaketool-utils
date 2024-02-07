@@ -175,6 +175,29 @@ def copy_config(
         )
 
 
+def initialise_config(
+        configfile=None,
+        system_config=None,
+        workflow_profile=None,
+        system_workflow_profile=None,
+        log=None,
+        **kwargs
+):
+    """Copy system config files to default locations if not already present
+
+    Args:
+        configfile (str): Default runtime config yaml filepath
+        system_config (str): System template config file to copy to configfile
+        workflow_profile (str): Dir filepath for workflow profile config yaml
+        system_workflow_profile (str): System template config yaml file to copy to workflow_profile/config.yaml
+    """
+    if configfile and system_config:
+        copy_config(configfile, system_config=system_config, log=log)
+    if workflow_profile and system_workflow_profile:
+        workflow_profile_yaml = os.path.join(workflow_profile, "config.yaml")
+        copy_config(workflow_profile_yaml, system_config=system_workflow_profile, log=log)
+
+
 def run_snakemake(
     configfile=None,
     system_config=None,
@@ -186,6 +209,8 @@ def run_snakemake(
     snake_default=None,
     snake_args=[],
     profile=None,
+    workflow_profile=None,
+    system_workflow_profile=None,
     log=None,
     **kwargs,
 ):
@@ -202,6 +227,8 @@ def run_snakemake(
         snake_default (list): Snakemake args to pass to Snakemake
         snake_args (list): Additional args to pass to Snakemake
         profile (str): Name of Snakemake profile
+        workflow_profile (str): Name of Snakemake workflow-profile
+        system_workflow_profile (str): Filepath of system workflow-profile config.yaml to copy if not present
         log (str): Log file for writing STDERR
         **kwargs:
 
@@ -246,9 +273,16 @@ def run_snakemake(
     if snake_args:
         snake_command += list(snake_args)
 
-    # allow double-handling of profile
+    # allow double-handling of --profile
     if profile:
         snake_command += ["--profile", profile]
+
+    # allow double-handling of --workflow-profile
+    if workflow_profile:
+        # copy system default if not present
+        copy_config(os.path.join(workflow_profile, "config.yaml"), system_config=system_workflow_profile, log=log)
+
+        snake_command += ["--workflow-profile", workflow_profile]
 
     # Run Snakemake!!!
     snake_command = " ".join(str(s) for s in snake_command)
