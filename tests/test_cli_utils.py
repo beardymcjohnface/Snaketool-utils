@@ -361,14 +361,16 @@ def test_run_snakemake(tmp_path):
             snake_args=["--dry-run"],
             profile="my_profile",
             workflow_profile=workflow_profile,
+            system_workflow_profile=system_workflow_profile,
             log=log_file,
             additional_arg="value",
         )
 
         # Assert that the copy_config function was called with the expected arguments
-        mock_copy_config.assert_called_once_with(
-            configfile, system_config=system_config, log=log_file
-        )
+        mock_copy_config.assert_has_calls([
+            call(configfile, system_config=system_config, log=None),
+            call(workflow_profile_config, system_config=system_workflow_profile, log=None)
+        ])
 
         # Assert that the update_config function was called with the expected arguments
         # mock_update_config.assert_called_once_with(configfile, merge={"key2": "value2"}, log=log_file)
